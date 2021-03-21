@@ -1,7 +1,14 @@
-import random
-import tkinter as TK
-from time import sleep
+try:
+	import random
+	import tkinter as TK
+	from time import sleep
+	import pygame
+except:
+	import os
+	os.system("pip install tkinter")
+	os.system("pip install pygame")
 
+pygame.init()
 
 class _Game_:
 	def __init__(self,masterr):
@@ -20,12 +27,36 @@ class _Game_:
 		# - - Variables - - #
 		self.steps = []
 		self.step_count = 0
-		self.blink_speed = 0.4
+		self.blink_speed = 0.5
+		self.play_speed = 0.7
 
 		# # #
 		self.Create_file_log()
 		self.First_page()
+
+		# - - Import Sounds - - #
 		
+		try:
+			self.select = pygame.mixer.Sound("Sounds/select.wav")
+			self.enter_s = pygame.mixer.Sound("Sounds/enter.wav")
+			self.game_over = pygame.mixer.Sound("Sounds/game-over.wav")
+
+			self.Piano_sound()
+			
+		except: pass
+
+	# - - Piano Sounds - - for Buttons - - #
+
+	def Piano_sound(self):
+		self.path = "Sounds/{}".format(random.randint(1,6))
+		self.p1 = pygame.mixer.Sound("{}/p1.wav".format(self.path))
+		self.p2 = pygame.mixer.Sound("{}/p2.wav".format(self.path))
+		self.p3 = pygame.mixer.Sound("{}/p3.wav".format(self.path))
+		self.p4 = pygame.mixer.Sound("{}/p4.wav".format(self.path))
+
+		print(self.path)
+
+
 	def Create_file_log(self):
 		file = open("log.txt",'a+')
 		file.close()
@@ -56,14 +87,17 @@ class _Game_:
 	# - - Value Change for play button - - #
 
 	def enter_play_b(self,e):
+		self.select.play()
 		self.play_b.config(fg="white", bg="#222222")
-
+		
 	def leave_play_b(self,e):
 		self.play_b.config(fg="#222222", bg="white")
+
 
 	# - - Play Button Action - - #
 	
 	def play_action(self):
+		self.enter_s.play()
 		try:
 			self.Destroy_first_page()
 			self.Destroy_last_page()
@@ -145,6 +179,7 @@ class _Game_:
 
 	def update_b1_color(self):
 		self.b1.config(bg=self.yellow)
+		self.p1.play()
 		tk.update()
 		sleep(self.blink_speed)
 		self.b1.config(bg=self.bg_buttons)
@@ -152,6 +187,7 @@ class _Game_:
 
 	def update_b2_color(self):
 		self.b2.config(bg=self.green)
+		self.p2.play()
 		tk.update()
 		sleep(self.blink_speed)
 		self.b2.config(bg=self.bg_buttons)
@@ -159,6 +195,7 @@ class _Game_:
 
 	def update_b3_color(self):
 		self.b3.config(bg=self.orange)
+		self.p3.play()
 		tk.update()
 		sleep(self.blink_speed)
 		self.b3.config(bg=self.bg_buttons)
@@ -166,6 +203,7 @@ class _Game_:
 
 	def update_b4_color(self):
 		self.b4.config(bg=self.blue)
+		self.p4.play()
 		tk.update()
 		sleep(self.blink_speed)
 		self.b4.config(bg=self.bg_buttons)
@@ -174,16 +212,34 @@ class _Game_:
 	# - - Algorithm - - #
 	def Button_pressed(self,n):
 		
+		if n == 1:
+			self.p1.play()
+		elif n == 2:
+			self.p2.play()
+		elif n == 3:
+			self.p3.play()
+		elif n == 4:
+			self.p4.play()
+
 		if self.steps[self.step_count] != n:	# wrong Choice
+			self.Piano_sound()
+			self.game_over.play()
 			self.Last_page()
 		
 		if len(self.steps)-1 == self.step_count:	
 			print(len(self.steps)-1,self.step_count)
 			self.step_count = -1
 			self.update_score()
+			if len(self.steps) == 1:
+				tk.update()
+				sleep(1)
 			self.genrate_step()
+			tk.update()
+			sleep(self.play_speed)
 			self.play_steps()
 		self.step_count += 1
+
+		self.write_best_score()		# Write Best score
 
 	def genrate_step(self):
 		self.steps.append(random.randint(1,4))
@@ -205,12 +261,22 @@ class _Game_:
 
 	# - Write Best Score - - #
 
-	def write_best_score(self,s):
+	def write_best_score(self):
 		if self.bs < self.nscore:
 			file = open("log.txt",'w')
 			file.truncate()
 			file.write("{}".format(self.nscore))
 			file.close()
+			self.Get_best_score()
+		if self.nscore == 10:
+			self.play_speed -= 0.1
+		if self.nscore == 15:
+			self.play_speed -= 0.1
+		if self.nscore == 20:
+			self.play_speed -= 0.1
+		if self.nscore == 30:
+			self.play_speed -= 0.2
+			self.blink_speed -= 0.1
 	# - - Last Page - - #
 
 	def Last_page(self):
@@ -230,7 +296,7 @@ class _Game_:
 		self.play_again_b = TK.Button(self.masterr, text="Play Again", font=("Copperplate Gothic", 20), width=10, padx=0, pady=0, relief="groove",bd=1,bg='white',fg="#222222", command=self.play_action)
 		self.play_again_b.pack(side="left",padx=20, pady=40)
 
-		self.home_b = TK.Button(self.masterr, text="Home", font=("Copperplate Gothic", 20), width=10, padx=0, pady=0, relief="groove",bd=1,bg='white',fg="#222222", command=self.First_page)
+		self.home_b = TK.Button(self.masterr, text="Home", font=("Copperplate Gothic", 20), width=10, padx=0, pady=0, relief="groove",bd=1,bg='white',fg="#222222", command=self.home_b_action)
 		self.home_b.pack(side="right",padx=20, pady=40)
 
 		self.play_again_b.bind("<Enter>",self.enter_play_again_b)
@@ -239,15 +305,21 @@ class _Game_:
 		self.home_b.bind("<Enter>",self.enter_home_b)
 		self.home_b.bind("<Leave>",self.leave_home_b)
 
+	def home_b_action(self):
+		self.enter_s.play()
+		self.First_page()
+
 	# - - Value Change for play Again button - - #
 
 	def enter_play_again_b(self,e):
+		self.select.play()
 		self.play_again_b.config(fg="white", bg="#222222")
 
 	def leave_play_again_b(self,e):
 		self.play_again_b.config(fg="#222222", bg="white")
 	
 	def enter_home_b(self,e):
+		self.select.play()
 		self.home_b.config(fg="white", bg="#222222")
 
 	def leave_home_b(self,e):
@@ -268,7 +340,7 @@ class _Game_:
 		self.ltitle.destroy()
 		self.play_again_b.destroy()
 		self.home_b.destroy()
-		self.write_best_score(self.nscore)		# Write Best score
+		self.write_best_score()		# Write Best score
 		self.step_count = 0
 		self.steps.clear()
 		self.nscore = 0
@@ -284,6 +356,13 @@ if __name__ == '__main__':
 		
 	tk = TK.Tk()
 	tk.geometry("500x500")
+	tk.maxsize(500,500)
+	tk.minsize(500,500)
+
+	try:
+		tk.iconbitmap("iocn_.ico")
+	except: pass
+
 	tk.title("Remember Me | ©NN")
 	game = _Game_(tk)
 
