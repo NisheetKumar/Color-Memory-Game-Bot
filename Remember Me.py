@@ -54,8 +54,6 @@ class _Game_:
 		self.p3 = pygame.mixer.Sound("{}/p3.wav".format(self.path))
 		self.p4 = pygame.mixer.Sound("{}/p4.wav".format(self.path))
 
-		print(self.path)
-
 
 	def Create_file_log(self):
 		file = open("log.txt",'a+')
@@ -114,7 +112,6 @@ class _Game_:
 		file = open("log.txt",'r')
 		rfile = file.readline()
 		file.close()
-		print(rfile)
 		if str(rfile) != "":
 			self.bs = int(rfile)
 			return str(rfile)
@@ -227,7 +224,6 @@ class _Game_:
 			self.Last_page()
 		
 		if len(self.steps)-1 == self.step_count:	
-			print(len(self.steps)-1,self.step_count)
 			self.step_count = -1
 			self.update_score()
 			if len(self.steps) == 1:
@@ -243,7 +239,7 @@ class _Game_:
 
 	def genrate_step(self):
 		self.steps.append(random.randint(1,4))
-		print(self.steps)
+
 	
 	def play_steps(self):
 		self.disabled_buttons()
